@@ -1,0 +1,106 @@
+version: 2
+
+models:
+  - name: stg_olist_customers
+    description: One row per Olist order-level customer key; person-level identity is retained separately.
+    columns:
+      - name: customer_order_id
+        data_tests: [not_null, unique]
+      - name: customer_unique_id
+        data_tests: [not_null]
+
+  - name: stg_olist_orders
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: customer_order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist_customers')
+                field: customer_order_id
+      - name: order_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [created, approved, invoiced, processing, shipped, delivered, unavailable, canceled]
+
+  - name: stg_olist_order_items
+    columns:
+      - name: order_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_olist_orders')
+                field: order_id
+      - name: product_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_olist_products')
+                field: product_id
+      - name: seller_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_olist_sellers')
+                field: seller_id
+
+  - name: stg_olist_order_payments
+    columns:
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_olist_orders')
+                field: order_id
+      - name: payment_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [credit_card, boleto, voucher, debit_card, not_defined]
+
+  - name: stg_olist_order_reviews
+    columns:
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_olist_orders')
+                field: order_id
+      - name: review_score
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5]
+                quote: false
+
+  - name: stg_olist_products
+    columns:
+      - name: product_id
+        data_tests: [not_null, unique]
+
+  - name: stg_olist_sellers
+    columns:
+      - name: seller_id
+        data_tests: [not_null, unique]
+
+  - name: stg_olist_geolocation
+  - name: stg_olist_category_translation
+
+  - name: stg_hillstrom_customers
+    columns:
+      - name: experiment_row_id
+        data_tests: [not_null, unique]
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Mens E-Mail', 'Womens E-Mail', 'No E-Mail']
+      - name: channel
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [Phone, Web, Multichannel]

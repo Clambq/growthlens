@@ -24,6 +24,7 @@ artifacts/
 # dbt and notebook execution output
 dbt/target/
 dbt/logs/
+dbt/.user.yml
 .ipynb_checkpoints/
 
 # IDE and OS files

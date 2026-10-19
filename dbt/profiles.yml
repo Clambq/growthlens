@@ -1,0 +1,17 @@
+growthlens:
+  target: "{{ env_var('DBT_TARGET', 'duckdb') }}"
+  outputs:
+    duckdb:
+      type: duckdb
+      path: "{{ env_var('GROWTHLENS_DUCKDB_PATH', 'dev.duckdb') }}"
+      schema: main
+      threads: 4
+    postgres:
+      type: postgres
+      host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('POSTGRES_PORT', '5432') | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'growthlens') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'growthlens') }}"
+      dbname: "{{ env_var('POSTGRES_DB', 'growthlens') }}"
+      schema: analytics
+      threads: 4

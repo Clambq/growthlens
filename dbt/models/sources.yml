@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Audited source tables loaded from the two independent public datasets.
+    schema: raw
+    config:
+      loaded_at_field: _loaded_at
+      freshness:
+        warn_after: {count: 3650, period: day}
+    tables:
+      - name: customers
+      - name: geolocation
+      - name: order_items
+      - name: order_payments
+      - name: order_reviews
+      - name: orders
+      - name: products
+      - name: sellers
+      - name: category_translation
+      - name: hillstrom

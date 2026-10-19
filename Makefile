@@ -1,4 +1,4 @@
-.PHONY: test lint db-up db-down load-olist load-hillstrom
+.PHONY: test lint db-up db-down load-olist load-hillstrom dbt-build
 
 test:
 	python -m pytest
@@ -17,3 +17,6 @@ load-olist:
 
 load-hillstrom:
 	python scripts/load_raw.py hillstrom
+
+dbt-build:
+	python -m dbt.cli.main build --project-dir dbt --profiles-dir dbt --target $(DBT_TARGET)
