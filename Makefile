@@ -1,4 +1,4 @@
-.PHONY: test lint db-up db-down
+.PHONY: test lint db-up db-down load-olist load-hillstrom
 
 test:
 	python -m pytest
@@ -11,3 +11,9 @@ db-up:
 
 db-down:
 	docker compose down
+
+load-olist:
+	python scripts/load_raw.py olist
+
+load-hillstrom:
+	python scripts/load_raw.py hillstrom
