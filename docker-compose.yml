@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-growthlens}
+      POSTGRES_USER: ${POSTGRES_USER:-growthlens}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-growthlens}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-growthlens} -d $${POSTGRES_DB:-growthlens}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - growthlens-postgres:/var/lib/postgresql/data
+
+volumes:
+  growthlens-postgres:

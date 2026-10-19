@@ -1,0 +1,33 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local data and databases
+data/raw/
+data/interim/
+*.csv
+*.parquet
+*.sqlite*
+postgres-data/
+
+# Generated artifacts; selected verified outputs are force-added explicitly.
+artifacts/
+
+# dbt and notebook execution output
+dbt/target/
+dbt/logs/
+.ipynb_checkpoints/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
