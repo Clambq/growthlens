@@ -43,3 +43,17 @@ models:
     columns:
       - name: segment
         data_tests: [not_null, unique]
+
+  - name: mart_experiment_summary
+    columns:
+      - name: segment
+        data_tests: [not_null, unique]
+
+  - name: mart_experiment_segments
+    description: Exploratory descriptive cuts; interaction inference is produced in Python.
+    columns:
+      - name: interpretation_label
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [exploratory_not_confirmatory]
