@@ -18,8 +18,11 @@ data/interim/
 *.sqlite*
 postgres-data/
 
-# Generated artifacts; selected verified outputs are force-added explicitly.
-artifacts/
+# Generated artifacts; only reviewed evidence manifests may be versioned.
+artifacts/*
+!artifacts/.gitkeep
+!artifacts/verified_metrics.json
+!artifacts/run_manifest.json
 
 # dbt and notebook execution output
 dbt/target/
