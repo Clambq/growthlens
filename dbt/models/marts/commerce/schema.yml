@@ -59,3 +59,33 @@ models:
         data_tests: [not_null]
       - name: metric
         data_tests: [not_null]
+
+  - name: mart_customer_cohorts
+    columns:
+      - name: customer_unique_id
+        data_tests: [not_null]
+      - name: month_offset
+        data_tests: [not_null]
+
+  - name: mart_customer_rfm
+    description: Fixed, documented RFM boundaries evaluated at the latest observed order date.
+    columns:
+      - name: customer_unique_id
+        data_tests: [not_null, unique]
+
+  - name: mart_seller_scorecard
+    description: Seller triage score; priority ranking requires at least three commercial orders.
+    columns:
+      - name: seller_id
+        data_tests: [not_null, unique]
+
+  - name: mart_delivery_diagnostics
+    description: Delivery timing and review-score associations; not a causal effect estimate.
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: interpretation_label
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [associational_not_causal]
