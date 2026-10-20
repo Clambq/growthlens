@@ -51,3 +51,11 @@ models:
         data_tests: [not_null, unique]
       - name: orders
         data_tests: [not_null]
+
+  - name: mart_kpi_alerts
+    description: SQL-native diagnostic alerts; production portfolio alerts use Python median/MAD.
+    columns:
+      - name: metric_date
+        data_tests: [not_null]
+      - name: metric
+        data_tests: [not_null]
