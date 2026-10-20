@@ -1,0 +1,18 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Daily KPI","Customer Cohort","Delivery Summary","Seller Scorecard","Experiment Summary","Experiment Quality"]
+
+ref table 'Daily KPI'
+ref table 'Customer Cohort'
+ref table 'Delivery Summary'
+ref table 'Seller Scorecard'
+ref table 'Experiment Summary'
+ref table 'Experiment Quality'
+ref table 'Dim Date'
+ref table 'Dim Experiment Segment'

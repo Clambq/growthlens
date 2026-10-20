@@ -1,0 +1,78 @@
+{
+  "observed_results": {
+    "commerce": {
+      "average_review_score": {
+        "analysis_type": "descriptive",
+        "value": 4.112998492665227
+      },
+      "merchandise_value": {
+        "analysis_type": "descriptive",
+        "value": 13494400.74
+      },
+      "on_time_delivery_rate": {
+        "analysis_type": "associational",
+        "value": 0.9325687334422876
+      },
+      "orders": {
+        "analysis_type": "descriptive",
+        "value": 98207
+      }
+    },
+    "experiment": {
+      "mens_email_conversion_effect": {
+        "analysis_type": "randomized_experiment",
+        "confidence_interval": {
+          "high": 0.008609841658779076,
+          "level": 0.95,
+          "low": 0.005000171380452313
+        },
+        "holm_adjusted_p_value": 3.0464470011910854e-13,
+        "n_control": 21306,
+        "n_treatment": 21307,
+        "raw_p_value": 1.5232235005955427e-13,
+        "value": 0.006805006519615695
+      },
+      "sample_ratio_p_value": {
+        "analysis_type": "experiment_diagnostic",
+        "value": 0.9036929575604196
+      },
+      "womens_email_conversion_effect": {
+        "analysis_type": "randomized_experiment",
+        "confidence_interval": {
+          "high": 0.004723437200768281,
+          "level": 0.95,
+          "low": 0.0014986778214022348
+        },
+        "holm_adjusted_p_value": 0.00015710512910668448,
+        "n_control": 21306,
+        "n_treatment": 21387,
+        "raw_p_value": 0.00015710512910668448,
+        "value": 0.003111057511085258
+      }
+    }
+  },
+  "scenario_assumptions": {},
+  "schema_version": "1.0.0",
+  "source_provenance": {
+    "hillstrom": {
+      "run_id": "060d8687-5212-4da6-b24a-8a2c7408ac53",
+      "sha256": [
+        "0e5893329d8b93cefecc571777672028290ab69865718020c78c7284f291aece"
+      ]
+    },
+    "olist": {
+      "run_id": "f8351789-e8bc-4a3a-93f7-4db62c8690f1",
+      "sha256": [
+        "983a422239e1712ded753b3bf9ecf47dc73f144d306029dcfa99e70a226883d2",
+        "b514f6fc991b9566aeba02aa5d67e2c3630f034b60a0e05aa0d082a3b66d88d6",
+        "0bc4d068c4fe38cbb01bd90e8746e3c613fe7b4baef75fab7b0e329701c3e279",
+        "4f713964f2815dbbaa40b9488268c55aac3627bfce5aa96cf58d1f3616de3cc0",
+        "012b61c7593e34f51fa614efdf802b9c7056ce6aae5307ddb93236e7cfc797d7",
+        "8df58ef3d2d7e9944010f7beecd9b75367f5588ec6e3c91cec19ae3345ef9ecf",
+        "3e6569628a17fbc75fd206ee357b59e20364b9afa90f5b6cd5b4d624c58aa9cc",
+        "1f643d2b950373b85735e7794b20986f528d7a000432e7c6f9bcbb44d0846a0e",
+        "a81f0d1f27b27e7293f761bc79e3ce8f348ee39c4b3ed3e49bde38f478586278"
+      ]
+    }
+  }
+}

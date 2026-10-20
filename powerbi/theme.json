@@ -1,0 +1,16 @@
+{
+  "name": "GrowthLens Decision Theme",
+  "dataColors": ["#0B6E69", "#39A69B", "#F2A900", "#D95D39", "#64748B", "#A78BFA"],
+  "background": "#F5F7FA",
+  "foreground": "#172033",
+  "tableAccent": "#0B6E69",
+  "visualStyles": {
+    "*": {
+      "*": {
+        "title": [{"fontFamily": "Segoe UI Semibold", "fontSize": 13, "color": {"solid": {"color": "#172033"}}}],
+        "background": [{"color": {"solid": {"color": "#FFFFFF"}}, "transparency": 0}],
+        "border": [{"show": true, "color": {"solid": {"color": "#DDE3EA"}}, "radius": 8}]
+      }
+    }
+  }
+}
