@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: One row per order with child relations pre-aggregated before joining.
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: merchandise_value
+        description: Sum of item price at order grain; freight is excluded.
+        data_tests: [not_null]
+      - name: payment_value
+        description: Sum of payment records at order grain; not labeled as GMV.
+        data_tests: [not_null]
+
+  - name: fct_order_items
+    description: One row per order item.
+    columns:
+      - name: order_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('fct_orders')
+                field: order_id
+
+  - name: dim_customers
+    description: One row per stable person-level Olist customer identifier.
+    columns:
+      - name: customer_unique_id
+        data_tests: [not_null, unique]
+
+  - name: dim_products
+    columns:
+      - name: product_id
+        data_tests: [not_null, unique]
+
+  - name: dim_sellers
+    columns:
+      - name: seller_id
+        data_tests: [not_null, unique]
+
+  - name: dim_dates
+    columns:
+      - name: date_day
+        data_tests: [not_null, unique]
+
+  - name: mart_daily_kpis
+    description: Daily commercial-order KPIs keyed by purchase date.
+    columns:
+      - name: metric_date
+        data_tests: [not_null, unique]
+      - name: orders
+        data_tests: [not_null]
