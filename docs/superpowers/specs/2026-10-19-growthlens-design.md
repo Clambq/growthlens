@@ -1,5 +1,11 @@
 # GrowthLens 电商经营分析与营销实验决策平台设计
 
+> **交付范围修订（2026-10-19）：** 当前执行环境没有 Power BI Desktop。最终仓库因此交付
+> 7 张经过测试的 BI 导出表、模型粒度与关系规范、DAX、主题、五页 PDF/PNG 成品预览和
+> `dashboard_contract.json`，不把手写空壳文件冒充 Desktop 生成的 PBIP/PBIX。本文后续提到
+> PBIP/PBIX 的验收项由这份可核验实施蓝图替代；若在有 Power BI Desktop 的环境继续制作，
+> 再按 `powerbi/README.md` 生成真正可刷新的 PBIP/PBIX。
+
 ## 1 项目目的
 
 GrowthLens 是一个面向数据分析岗位作品集的端到端项目。它通过两个相互独立、来源透明的公开数据案例，展示业务数据分析师从数据接入、质量校验和指标建模，到异常诊断、实验评估、可视化汇报和业务建议的完整工作链路。

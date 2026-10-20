@@ -7,18 +7,35 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-SECRET_PATTERNS = (
+CONTENT_PATTERNS = (
     ("AWS access key", re.compile(rb"AKIA[0-9A-Z]{16}")),
     ("GitHub token", re.compile(rb"(?:gh[psoru]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})")),
     ("private key", re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
     ("local Windows user path", re.compile(rb"[A-Za-z]:\\Users\\[^\\\r\n]+")),
+    ("local Windows user path", re.compile(rb"[A-Za-z]:/Users/[^/\r\n]+")),
+    ("absolute Unix home path", re.compile(rb"/home/[A-Za-z0-9._-]+/")),
+    ("Chinese mobile number", re.compile(rb"(?<!\d)1[3-9]\d{9}(?!\d)")),
+    (
+        "private email address",
+        re.compile(
+            rb"(?i)\b[A-Z0-9._%+-]+@(?!(?:example\.(?:com|org)|localhost)\b)"
+            rb"[A-Z0-9.-]+\.[A-Z]{2,}\b"
+        ),
+    ),
 )
 
 FORBIDDEN_PATH_PATTERNS = (
     re.compile(r"(?:^|/)data/raw/", re.IGNORECASE),
-    re.compile(r"\.(?:duckdb|db|sqlite|pem|key)$", re.IGNORECASE),
+    re.compile(r"\.(?:csv|parquet|zip|7z|duckdb|db|sqlite|pem|key)$", re.IGNORECASE),
+    re.compile(
+        r"(?:^|/)(?:\.env|kaggle\.json|credentials(?:\.json)?|\.npmrc|\.pypirc)$",
+        re.IGNORECASE,
+    ),
 )
 MAX_BLOB_BYTES = 10 * 1024 * 1024
+TEXT_SUFFIXES = frozenset(
+    {"", ".py", ".sql", ".md", ".yml", ".yaml", ".json", ".toml", ".txt", ".env"}
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -70,7 +87,7 @@ def scan_git_history(root: Path) -> tuple[HistoryFinding, ...]:
         if size > MAX_BLOB_BYTES:
             findings.append(HistoryFinding(object_sha, path, "oversized historical blob"))
             continue
-        if size > 2 * 1024 * 1024:
+        if Path(path).suffix.lower() not in TEXT_SUFFIXES:
             continue
         content = subprocess.run(
             ["git", "cat-file", "blob", object_sha],
@@ -78,7 +95,7 @@ def scan_git_history(root: Path) -> tuple[HistoryFinding, ...]:
             capture_output=True,
             check=True,
         ).stdout
-        for reason, pattern in SECRET_PATTERNS:
+        for reason, pattern in CONTENT_PATTERNS:
             if pattern.search(content):
                 findings.append(HistoryFinding(object_sha, path, reason))
     return tuple(findings)

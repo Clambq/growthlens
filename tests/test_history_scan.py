@@ -45,3 +45,29 @@ def test_history_scanner_finds_raw_dataset_removed_from_worktree(tmp_path: Path)
     findings = scan_git_history(tmp_path)
 
     assert any(finding.reason == "forbidden historical path" for finding in findings)
+
+
+def test_history_scanner_finds_private_content_and_credential_paths(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "-b", "main")
+    _git(tmp_path, "config", "user.name", "GrowthLens Test")
+    _git(tmp_path, "config", "user.email", "test@example.com")
+    note = tmp_path / "note.md"
+    note.write_text(
+        "owner="
+        + "person"
+        + "@"
+        + "private-domain.test path=C:"
+        + "/Users/private/project ",
+        encoding="utf-8",
+    )
+    credential = tmp_path / ".env"
+    credential.write_text("PASSWORD=placeholder\n", encoding="utf-8")
+    _git(tmp_path, "add", "note.md", ".env")
+    _git(tmp_path, "commit", "-m", "add private material")
+
+    findings = scan_git_history(tmp_path)
+    reasons = {finding.reason for finding in findings}
+
+    assert "private email address" in reasons
+    assert "local Windows user path" in reasons
+    assert "forbidden historical path" in reasons

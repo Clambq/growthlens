@@ -1,5 +1,11 @@
 # GrowthLens Implementation Plan
 
+> **Scope amendment (2026-10-19):** Power BI Desktop is unavailable in the execution
+> environment. The accepted BI deliverable is therefore the tested seven-table export contract,
+> model/DAX/theme implementation blueprint, and five-page PDF/PNG rendered preview. Empty,
+> hand-authored PBIP/PBIX scaffolds are explicitly rejected. Any later Desktop-authored PBIP/PBIX
+> must follow `powerbi/README.md` and reconcile to the committed metric artifact.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build and publish a reproducible portfolio-grade analytics platform that demonstrates SQL modeling, data quality, business monitoring, experiment analysis, Power BI reporting, and evidence-backed resume claims.
