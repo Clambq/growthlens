@@ -25,14 +25,14 @@ DIVIDE(
 
 On-time Delivery Rate =
 DIVIDE(
-    SUMX('Daily KPI', 'Daily KPI'[on_time_delivery_rate] * 'Daily KPI'[orders]),
-    [Orders]
+    SUM('Daily KPI'[on_time_delivery_orders]),
+    SUM('Daily KPI'[eligible_delivery_orders])
 )
 
 Average Review Score =
 DIVIDE(
-    SUMX('Daily KPI', 'Daily KPI'[average_review_score] * 'Daily KPI'[orders]),
-    [Orders]
+    SUM('Daily KPI'[review_score_total]),
+    SUM('Daily KPI'[reviewed_orders])
 )
 
 Late Delivery Rate =

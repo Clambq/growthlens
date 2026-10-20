@@ -3,14 +3,14 @@
     "difference_in_proportions",
     "difference_in_proportions"
   ],
-  "generated_at": "2026-10-20T00:32:37.372823+00:00",
-  "git_sha": "5009b5b7e43612598d10da402397f96cf26cc93f",
+  "generated_at": "2026-10-20T00:37:43.667609+00:00",
+  "git_sha": "c709f3d32453f7d6388e94d83fd9b5a613540d0b",
   "platform": "Windows-11-10.0.26200-SP0",
   "python": "3.13.15",
   "schema_version": "1.0.0",
   "source_run_ids": {
-    "hillstrom": "060d8687-5212-4da6-b24a-8a2c7408ac53",
-    "olist": "f8351789-e8bc-4a3a-93f7-4db62c8690f1"
+    "hillstrom": "85bb0534-a81b-468f-bbff-cbefa072f473",
+    "olist": "ec0750d0-ace1-49f2-a3bb-65746116f5ed"
   },
-  "verified_metrics_sha256": "9e8d4634a541cf996c8d1279cbc761fac7feb36480917427292ed7e2bc5c7598"
+  "verified_metrics_sha256": "9e961cffd83889c17969c22f78edc9b6b0bc1fc24058ba4873a6edc42a9d81f6"
 }

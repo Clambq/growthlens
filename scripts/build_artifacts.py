@@ -34,8 +34,12 @@ def main() -> int:
                 """
                 SELECT COALESCE(SUM(orders), 0) AS orders,
                        COALESCE(SUM(merchandise_value), 0) AS merchandise_value,
-                       AVG(on_time_delivery_rate) AS on_time_delivery_rate,
-                       AVG(average_review_score) AS average_review_score
+                       CAST(SUM(on_time_delivery_orders) AS DOUBLE PRECISION)
+                           / NULLIF(SUM(eligible_delivery_orders), 0)
+                           AS on_time_delivery_rate,
+                       CAST(SUM(review_score_total) AS DOUBLE PRECISION)
+                           / NULLIF(SUM(reviewed_orders), 0)
+                           AS average_review_score
                 FROM marts.mart_daily_kpis
                 """
             )

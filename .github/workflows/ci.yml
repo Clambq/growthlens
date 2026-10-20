@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: growthlens_test
+          POSTGRES_USER: growthlens
+          POSTGRES_PASSWORD: growthlens
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U growthlens -d growthlens_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql+psycopg://growthlens:growthlens@localhost:5432/growthlens_test
+      IPYTHONDIR: ${{ runner.temp }}/growthlens-ipython
+      JUPYTER_CONFIG_DIR: ${{ runner.temp }}/growthlens-jupyter-config
+      JUPYTER_DATA_DIR: ${{ runner.temp }}/growthlens-jupyter-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install project
+        run: python -m pip install -e ".[dev,analytics]"
+      - name: Lint
+        run: python -m ruff check src scripts tests
+      - name: Test
+        run: python -m pytest -q
+      - name: Execute notebooks in clean kernels
+        run: python scripts/execute_notebooks.py

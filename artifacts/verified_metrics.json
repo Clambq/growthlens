@@ -3,7 +3,7 @@
     "commerce": {
       "average_review_score": {
         "analysis_type": "descriptive",
-        "value": 4.112998492665227
+        "value": 4.116592971044973
       },
       "merchandise_value": {
         "analysis_type": "descriptive",
@@ -11,7 +11,7 @@
       },
       "on_time_delivery_rate": {
         "analysis_type": "associational",
-        "value": 0.9325687334422876
+        "value": 0.9188763346117964
       },
       "orders": {
         "analysis_type": "descriptive",
@@ -55,13 +55,13 @@
   "schema_version": "1.0.0",
   "source_provenance": {
     "hillstrom": {
-      "run_id": "060d8687-5212-4da6-b24a-8a2c7408ac53",
+      "run_id": "85bb0534-a81b-468f-bbff-cbefa072f473",
       "sha256": [
         "0e5893329d8b93cefecc571777672028290ab69865718020c78c7284f291aece"
       ]
     },
     "olist": {
-      "run_id": "f8351789-e8bc-4a3a-93f7-4db62c8690f1",
+      "run_id": "ec0750d0-ace1-49f2-a3bb-65746116f5ed",
       "sha256": [
         "983a422239e1712ded753b3bf9ecf47dc73f144d306029dcfa99e70a226883d2",
         "b514f6fc991b9566aeba02aa5d67e2c3630f034b60a0e05aa0d082a3b66d88d6",

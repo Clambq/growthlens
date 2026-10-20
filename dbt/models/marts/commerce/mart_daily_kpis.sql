@@ -30,6 +30,22 @@ select
         0
     ) as on_time_delivery_rate,
     avg(review_score) as average_review_score
+    , sum(
+        case
+            when delivered_at is not null and estimated_delivery_at is not null then 1
+            else 0
+        end
+    ) as eligible_delivery_orders
+    , sum(
+        case
+            when delivered_at is not null
+                and estimated_delivery_at is not null
+                and delivered_at <= estimated_delivery_at then 1
+            else 0
+        end
+    ) as on_time_delivery_orders
+    , sum(case when review_score is not null then 1 else 0 end) as reviewed_orders
+    , sum(coalesce(review_score, 0)) as review_score_total
 from {{ ref('int_order_enriched') }}
 where is_commercial_order
 group by cast(purchased_at as date)

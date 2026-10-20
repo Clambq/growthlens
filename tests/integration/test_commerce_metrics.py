@@ -149,7 +149,9 @@ def test_order_and_daily_metrics_reconcile_without_fanout(tmp_path: Path) -> Non
             """
             SELECT metric_date, merchandise_value, freight_value, payment_value,
                    orders, customers, average_order_value, repeat_customer_rate,
-                   on_time_delivery_rate, average_review_score
+                   on_time_delivery_rate, average_review_score,
+                   eligible_delivery_orders, on_time_delivery_orders,
+                   reviewed_orders, review_score_total
             FROM marts.mart_daily_kpis ORDER BY metric_date
             """
         ).fetchall()
@@ -177,6 +179,10 @@ def test_order_and_daily_metrics_reconcile_without_fanout(tmp_path: Path) -> Non
             0.0,
             1.0,
             4.0,
+            1,
+            1,
+            1,
+            4.0,
         ),
         (
             daily[1][0],
@@ -188,6 +194,10 @@ def test_order_and_daily_metrics_reconcile_without_fanout(tmp_path: Path) -> Non
             50.0,
             1.0,
             0.0,
+            2.0,
+            1,
+            0,
+            1,
             2.0,
         ),
     ]
