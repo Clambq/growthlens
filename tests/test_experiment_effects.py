@@ -110,9 +110,27 @@ def test_interactions_enforce_minimum_sample_per_arm() -> None:
 
     assert bool(result.loc["A", "eligible"]) is True
     assert result.loc["A", "effect"] == 1.0
-    assert result.loc["A", "interaction_effect"] > 0
-    assert result.loc["A", "p_value"] == 0.0
-    assert result.loc["B", "interaction_effect"] < 0
-    assert result.loc["B", "p_value"] == 1.0
+    assert result.loc["A", "interaction_effect"] == 0.0
+    assert result.loc["A", "p_value"] == 1.0
+    assert result.loc["B", "interaction_effect"] == -1.0
+    assert result.loc["B", "p_value"] == 0.0
     assert bool(result.loc["small", "eligible"]) is False
     assert np.isnan(result.loc["small", "effect"])
+
+
+def test_interaction_p_value_tests_heterogeneity_not_within_subgroup_effect() -> None:
+    rng = np.random.default_rng(42)
+    rows = []
+    for subgroup in ("A", "B"):
+        baseline = rng.normal(0, 1, 400)
+        for treated in (0, 1):
+            for value in baseline:
+                rows.append((subgroup, treated, value + 0.5 * treated))
+    frame = pd.DataFrame(rows, columns=["subgroup", "treated", "outcome"])
+
+    result = interaction_effects(
+        frame, "outcome", "treated", "subgroup", min_group_size=30
+    ).set_index("subgroup")
+
+    assert result.loc["B", "interaction_effect"] == pytest.approx(0.0, abs=1e-12)
+    assert result.loc["B", "interaction_p_value"] == pytest.approx(1.0)

@@ -45,5 +45,7 @@ jobs:
         run: python -m pytest -q
       - name: Scan full Git history
         run: python scripts/scan_git_history.py
+      - name: Verify committed evidence
+        run: python scripts/verify_committed_evidence.py
       - name: Execute notebooks in clean kernels
         run: python scripts/execute_notebooks.py

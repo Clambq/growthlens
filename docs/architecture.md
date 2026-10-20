@@ -74,8 +74,8 @@ auditable but are excluded from commercial KPI denominators by one centralized s
 - **DuckDB plus PostgreSQL:** low-friction local reproduction without abandoning a server database
   path that matches analyst job descriptions.
 - **Machine-readable metric artifact:** prevents resume, README, and dashboard numbers from drifting.
-- **PBIP/TMDL plus PDF:** keeps the semantic model diffable and the visual result reviewable even
-  when Power BI Desktop is unavailable.
+- **BI contract plus PDF:** keeps model grains, DAX, visual intent, and the generated result
+  reviewable without presenting an empty scaffold as a Desktop-authored PBIP.
 - **Robust median/MAD monitoring:** tolerates non-normal operational series and makes the zero-MAD
   behavior explicit.
 - **Difference in proportions plus Holm:** matches the frozen binary primary outcome and controls

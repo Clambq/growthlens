@@ -13,15 +13,11 @@ Payment Value = SUM('Daily KPI'[payment_value])
 
 Orders = SUM('Daily KPI'[orders])
 
-Customers = SUM('Daily KPI'[customers])
+Customers = MAX('Customer Summary'[unique_customers])
 
 Average Order Value = DIVIDE([Merchandise Value], [Orders])
 
-Repeat Customer Rate =
-DIVIDE(
-    SUMX('Daily KPI', 'Daily KPI'[repeat_customer_rate] * 'Daily KPI'[customers]),
-    [Customers]
-)
+Repeat Customer Rate = MAX('Customer Summary'[repeat_customer_rate])
 
 On-time Delivery Rate =
 DIVIDE(
@@ -59,7 +55,7 @@ VAR ControlRate =
     )
 RETURN SelectedRate - ControlRate
 
-Duplicate Assignment Count = SUM('Experiment Quality'[duplicate_customer_count])
+Duplicate Source Row Key Count = MAX('Experiment Quality'[duplicate_source_row_key_count])
 ```
 
 Experiment confidence intervals and Holm-adjusted p-values are imported from

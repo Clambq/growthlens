@@ -85,7 +85,7 @@ def _create_raw_fixture(database: Path, *, order_status: str = "delivered") -> N
               '1' mens, '0' womens, 'Urban' zip_code, '0' newbie,
               'Web' channel, 'Mens E-Mail' segment, '1' visit,
               '1' "conversion", '25.00' spend,
-              TIMESTAMP '2024-01-01' _loaded_at
+              TIMESTAMP '2024-01-01' _loaded_at, 'fixture-hillstrom-1' _row_hash
             """,
         ]
         for statement in statements:

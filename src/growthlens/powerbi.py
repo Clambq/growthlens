@@ -37,6 +37,13 @@ EXPORT_SPECS = (
         "mart_customer_cohorts",
     ),
     ExportSpec(
+        "customer_summary",
+        "customer_summary.csv",
+        "one row for the full commercial-order observation period",
+        ("scope",),
+        "mart_customer_rfm",
+    ),
+    ExportSpec(
         "daily_kpis",
         "daily_kpis.csv",
         "one row per purchase date",
@@ -93,6 +100,15 @@ def _read_source(connection: Any, spec: ExportSpec, schema: str | None) -> pd.Da
                    AVG(CAST(is_repeat_activity AS DOUBLE PRECISION)) AS repeat_activity_rate
             FROM {relation}
             GROUP BY cohort_month, activity_month, month_offset
+        """
+    elif spec.name == "customer_summary":
+        query = f"""
+            SELECT 'all_commercial_orders' AS scope,
+                   COUNT(*) AS unique_customers,
+                   SUM(CASE WHEN frequency > 1 THEN 1 ELSE 0 END) AS repeat_customers,
+                   CAST(SUM(CASE WHEN frequency > 1 THEN 1 ELSE 0 END) AS DOUBLE PRECISION)
+                       / NULLIF(COUNT(*), 0) AS repeat_customer_rate
+            FROM {relation}
         """
     elif spec.name == "delivery_summary":
         query = f"""

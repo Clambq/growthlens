@@ -7,7 +7,7 @@ with assignments as (
     from assignments
     group by segment
 ), duplicate_count as (
-    select count(*) as duplicate_customer_count
+    select count(*) as duplicate_source_row_key_count
     from (
         select experiment_customer_id
         from assignments
@@ -21,7 +21,7 @@ select
     group_counts.observed_count,
     cast(group_counts.observed_count as double precision)
         / nullif(totals.total_assignments, 0) as observed_share,
-    duplicate_count.duplicate_customer_count
+    duplicate_count.duplicate_source_row_key_count
 from group_counts
 cross join totals
 cross join duplicate_count

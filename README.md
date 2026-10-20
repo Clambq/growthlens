@@ -2,7 +2,7 @@
 
 > A reproducible analytics engineering and experimentation portfolio: audited public data,
 > grain-safe SQL marts, monitored business KPIs, randomized-experiment inference, and a
-> five-page Power BI decision dashboard.
+> five-page decision-dashboard preview with a Power BI implementation blueprint.
 
 [![CI](https://github.com/Clambq/growthlens/actions/workflows/ci.yml/badge.svg)](https://github.com/Clambq/growthlens/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB)](https://www.python.org/)
@@ -23,7 +23,8 @@ joined or represented as one company:
 - **Commerce Performance Observatory:** 98,207 commercial orders from the anonymized Olist
   marketplace, modeled without item/payment/review fan-out.
 - **Experiment Decision Lab:** 64,000 randomized Hillstrom customers, with sample-ratio checks,
-  confidence intervals, Holm multiplicity control, CUPED utilities, and guarded segment analysis.
+  confidence intervals, Holm multiplicity control, tested CUPED utilities, baseline-balance gates,
+  and guarded segment analysis. Primary published effects are unadjusted per the frozen plan.
 
 ## Verified findings
 
@@ -34,11 +35,14 @@ they are not manually typed into the analysis pipeline.
 | --- | ---: | --- |
 | Commercial orders | 98,207 | descriptive |
 | Merchandise value | R$13.49M | freight excluded; descriptive |
+| Unique commercial customers | 94,990 | full-period distinct customer grain |
+| Repeat-customer rate | 3.04% | customers with more than one commercial order |
 | On-time delivery | 91.89% | overall eligible deliveries; associational context |
 | Average review score | 4.12 / 5 | reviewed commercial orders |
 | Men's email conversion effect | +0.68 pp, 95% CI [0.50, 0.86] | randomized; Holm p < 0.001 |
 | Women's email conversion effect | +0.31 pp, 95% CI [0.15, 0.47] | randomized; Holm p < 0.001 |
 | Sample-ratio mismatch test | p = 0.9037 | no SRM evidence at the frozen threshold |
+| Maximum baseline \|SMD\| | 0.0086 | below the frozen 0.10 balance threshold |
 
 Commerce delivery/review findings are associations. Only the Hillstrom treatment comparisons are
 described causally because treatment was randomized and passed the pre-specified validity gates.
@@ -100,8 +104,10 @@ receives a fresh audit record.
 
 ## Dashboard
 
-The repository includes editable PBIP/TMDL source, documented DAX, deterministic extracts,
-five PNG pages, and a PDF. Power BI Desktop is required only to save the project as a binary PBIX.
+The repository includes a candid Power BI implementation blueprint: documented semantic-model
+grains, DAX, theme, deterministic extracts, five rendered PNG pages, and a PDF. It does **not**
+claim to include a Power BI Desktop-authored PBIP/PBIX; the reviewable preview is generated from
+the same tested extracts and metric artifact.
 
 1. Management Overview
 2. Revenue and Customer Growth
@@ -114,13 +120,16 @@ five PNG pages, and a PDF. Power BI Desktop is required only to save the project
 
 ## Quality gates
 
-- 65+ Python/integration tests plus 101 dbt model/data checks on the public dataset.
+- 76 passing Python/integration tests locally plus 101 dbt model/data checks on the public dataset
+  (one PostgreSQL-only smoke test runs in CI).
 - Exact reconciliation fixtures for multi-item, multi-payment, duplicate-review, canceled-order,
   repeated-customer, early-delivery, and late-delivery cases.
 - Explicit experiment contract: conversion primary outcome, two treatment-vs-control comparisons,
   Holm adjustment, 95% intervals, fixed seed, and post-treatment covariate rejection.
 - No raw data, credentials, local databases, private identifiers, or user paths in Git history.
-- CI uses fixture data and PostgreSQL smoke coverage; it does not require Kaggle credentials.
+- CI runs unit, fixture reconciliation, DuckDB/dbt integration, PostgreSQL ingestion smoke,
+  notebook execution, and full-history hygiene checks; the full public-data build remains the
+  documented local release workflow because CI does not download Kaggle data.
 
 ## Repository map
 
@@ -129,7 +138,7 @@ five PNG pages, and a PDF. Power BI Desktop is required only to save the project
 | `src/growthlens/` | contracts, ingestion, monitoring, experimentation, reporting, orchestration |
 | `dbt/` | staging, intermediate models, marts, and data tests |
 | `notebooks/` | thin explanatory notebooks; business logic stays in tested modules |
-| `powerbi/` | PBIP/TMDL, DAX, theme, screenshots, and PDF |
+| `powerbi/` | BI contract, DAX, theme, rendered screenshots, and PDF preview |
 | `reports/` | metric catalog, experiment contract, decision memo, and limitations |
 | `docs/` | architecture, interview guide, and resume evidence ledger |
 | `tests/` | unit, integration, statistical, hygiene, and reconciliation tests |

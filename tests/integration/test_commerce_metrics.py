@@ -118,9 +118,10 @@ def _create_metric_fixture(database: Path) -> None:
             """
             CREATE TABLE raw.hillstrom AS SELECT * FROM (VALUES
               ('2', '2) $100 - $200', '150.00', '1', '0', 'Urban', '0', 'Web',
-               'Mens E-Mail', '1', '1', '25.00', TIMESTAMP '2024-01-01')
+               'Mens E-Mail', '1', '1', '25.00', TIMESTAMP '2024-01-01',
+               'fixture-hillstrom-1')
             ) t(recency, history_segment, history, mens, womens, zip_code, newbie,
-                channel, segment, visit, "conversion", spend, _loaded_at)
+                channel, segment, visit, "conversion", spend, _loaded_at, _row_hash)
             """,
         ]
         for statement in statements:

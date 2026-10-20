@@ -211,7 +211,7 @@ def interaction_effects(
     *,
     min_group_size: int = 30,
 ) -> pd.DataFrame:
-    """Estimate labeled exploratory subgroup effects with per-arm size guards."""
+    """Estimate exploratory treatment-effect heterogeneity against a reference subgroup."""
 
     required = {outcome_col, treatment_col, subgroup_col}
     missing = sorted(required.difference(frame.columns))
@@ -224,30 +224,23 @@ def interaction_effects(
         raise ValueError("interaction data contains missing values")
     if not set(working[treatment_col].unique()).issubset({0, 1}):
         raise ValueError("treatment column must contain only 0 and 1")
-    overall_treatment = working.loc[working[treatment_col].astype(bool), outcome_col].astype(float)
-    overall_control = working.loc[~working[treatment_col].astype(bool), outcome_col].astype(float)
-    overall_effect = float(overall_treatment.mean() - overall_control.mean())
-
-    rows: list[dict[str, object]] = []
+    estimates: list[dict[str, object]] = []
     for subgroup, group in working.groupby(subgroup_col, sort=True):
         treatment_values = group.loc[group[treatment_col].astype(bool), outcome_col].astype(float)
         control_values = group.loc[~group[treatment_col].astype(bool), outcome_col].astype(float)
         eligible = len(treatment_values) >= min_group_size and len(control_values) >= min_group_size
         if eligible:
             effect = float(treatment_values.mean() - control_values.mean())
-            constant_arms = treatment_values.var(ddof=1) == 0 and control_values.var(ddof=1) == 0
-            if constant_arms:
-                p_value = 1.0 if effect == 0 else 0.0
-            else:
-                p_value = float(
-                    ttest_ind(treatment_values, control_values, equal_var=False).pvalue
+            effect_se = float(
+                np.sqrt(
+                    treatment_values.var(ddof=1) / len(treatment_values)
+                    + control_values.var(ddof=1) / len(control_values)
                 )
-            interaction = effect - overall_effect
+            )
         else:
             effect = np.nan
-            p_value = np.nan
-            interaction = np.nan
-        rows.append(
+            effect_se = np.nan
+        estimates.append(
             {
                 "subgroup": subgroup,
                 "n_treatment": len(treatment_values),
@@ -255,13 +248,44 @@ def interaction_effects(
                 "treatment_mean": float(treatment_values.mean()),
                 "control_mean": float(control_values.mean()),
                 "effect": effect,
-                "interaction_effect": interaction,
-                "p_value": p_value,
+                "effect_standard_error": effect_se,
                 "eligible": eligible,
-                "interpretation": "exploratory_interaction",
             }
         )
-    return pd.DataFrame(rows)
+    eligible_rows = [row for row in estimates if row["eligible"]]
+    if not eligible_rows:
+        for row in estimates:
+            row.update(
+                reference_subgroup=None,
+                interaction_effect=np.nan,
+                interaction_p_value=np.nan,
+                p_value=np.nan,
+                interpretation="exploratory_interaction",
+            )
+        return pd.DataFrame(estimates)
+
+    reference = eligible_rows[0]
+    for row in estimates:
+        if not row["eligible"]:
+            interaction = np.nan
+            p_value = np.nan
+        else:
+            interaction = float(row["effect"] - reference["effect"])
+            interaction_se = float(
+                np.sqrt(row["effect_standard_error"] ** 2 + reference["effect_standard_error"] ** 2)
+            )
+            if interaction_se == 0:
+                p_value = 1.0 if interaction == 0 else 0.0
+            else:
+                p_value = float(2 * norm.sf(abs(interaction / interaction_se)))
+        row.update(
+            reference_subgroup=reference["subgroup"],
+            interaction_effect=interaction,
+            interaction_p_value=p_value,
+            p_value=p_value,
+            interpretation="exploratory_interaction",
+        )
+    return pd.DataFrame(estimates)
 
 
 def sample_ratio_test(

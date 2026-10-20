@@ -1,0 +1,22 @@
+{
+  "artifact_type": "implementation_blueprint_and_rendered_preview",
+  "editable_power_bi_project_included": false,
+  "pages": [
+    "Management Overview",
+    "Revenue and Customer Growth",
+    "Fulfillment and Seller Operations",
+    "Experiment Decision",
+    "Data Quality"
+  ],
+  "inputs": [
+    "customer_cohorts.csv",
+    "customer_summary.csv",
+    "daily_kpis.csv",
+    "delivery_summary.csv",
+    "experiment_quality.csv",
+    "experiment_summary.csv",
+    "seller_scorecard.csv"
+  ],
+  "implementation_assets": ["model.md", "measures.md", "theme.json"],
+  "preview_assets": ["GrowthLens-dashboard.pdf", "screenshots/GrowthLens-1.png"]
+}

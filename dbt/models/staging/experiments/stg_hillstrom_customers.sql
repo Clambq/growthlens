@@ -1,5 +1,5 @@
 select
-    row_number() over () as experiment_row_id,
+    cast(_row_hash as varchar) as experiment_row_id,
     cast(recency as integer) as recency_months,
     cast(history_segment as varchar) as history_segment,
     cast(history as decimal(18, 2)) as history_value,

@@ -14,7 +14,13 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 
 from growthlens.config import load_settings
-from growthlens.experimentation import holm_adjust, proportion_effect, sample_ratio_test
+from growthlens.experimentation import (
+    holm_adjust,
+    proportion_effect,
+    sample_ratio_test,
+    standardized_mean_differences,
+    validate_assignments,
+)
 from growthlens.reporting import build_verified_metrics, write_verified_metrics
 
 
@@ -44,13 +50,29 @@ def main() -> int:
                 """
             )
         ).mappings().one()
+        customers = connection.execute(
+            text(
+                """
+                SELECT COUNT(*) AS unique_customers,
+                       SUM(CASE WHEN frequency > 1 THEN 1 ELSE 0 END) AS repeat_customers,
+                       CAST(SUM(CASE WHEN frequency > 1 THEN 1 ELSE 0 END) AS DOUBLE PRECISION)
+                           / NULLIF(COUNT(*), 0) AS repeat_customer_rate
+                FROM marts.mart_customer_rfm
+                """
+            )
+        ).mappings().one()
         experiment = pd.read_sql_query(
             text(
                 """
                 SELECT assignments.experiment_customer_id, assignments.segment,
-                       outcomes.converted, outcomes.visited, outcomes.spend
+                       outcomes.converted, outcomes.visited, outcomes.spend,
+                       customers.recency_months, customers.history_value,
+                       CAST(customers.purchased_mens AS INTEGER) AS purchased_mens,
+                       CAST(customers.purchased_womens AS INTEGER) AS purchased_womens,
+                       CAST(customers.is_new_customer AS INTEGER) AS is_new_customer
                 FROM marts.fct_experiment_assignments assignments
                 JOIN marts.fct_experiment_outcomes outcomes USING (experiment_customer_id)
+                JOIN marts.dim_experiment_customers customers USING (experiment_customer_id)
                 """
             ),
             connection,
@@ -79,6 +101,12 @@ def main() -> int:
         entry["sha256"].append(row["source_sha256"])
 
     counts = experiment["segment"].value_counts().to_dict()
+    validate_assignments(
+        experiment[["experiment_customer_id", "segment"]],
+        customer_col="experiment_customer_id",
+        group_col="segment",
+        expected_groups={"No E-Mail", "Mens E-Mail", "Womens E-Mail"},
+    )
     srm = sample_ratio_test(counts, {group: 1 / 3 for group in counts})
     if not srm.passes:
         raise RuntimeError(f"experiment SRM gate failed: p={srm.p_value}")
@@ -94,11 +122,45 @@ def main() -> int:
         for treatment in treatment_names
     ]
     adjusted = holm_adjust([effect.p_value for effect in effects])
+    balance = standardized_mean_differences(
+        experiment,
+        group_col="segment",
+        covariates=(
+            "recency_months",
+            "history_value",
+            "purchased_mens",
+            "purchased_womens",
+            "is_new_customer",
+        ),
+        reference="No E-Mail",
+    )
+    max_absolute_smd = float(balance["abs_smd"].max())
+    if max_absolute_smd >= 0.1:
+        raise RuntimeError(f"experiment balance gate failed: max |SMD|={max_absolute_smd}")
+    baseline_missing_rate = float(
+        experiment[
+            [
+                "recency_months",
+                "history_value",
+                "purchased_mens",
+                "purchased_womens",
+                "is_new_customer",
+            ]
+        ].isna().mean().max()
+    )
     experiment_metrics = {
         "sample_ratio_p_value": {
             "value": srm.p_value,
             "analysis_type": "experiment_diagnostic",
-        }
+        },
+        "max_absolute_baseline_smd": {
+            "value": max_absolute_smd,
+            "analysis_type": "experiment_diagnostic",
+        },
+        "max_baseline_missing_rate": {
+            "value": baseline_missing_rate,
+            "analysis_type": "experiment_diagnostic",
+        },
     }
     for effect, adjusted_p in zip(effects, adjusted, strict=True):
         key = effect.treatment_name.lower().replace(" ", "_").replace("-", "")
@@ -131,6 +193,14 @@ def main() -> int:
                 },
                 "average_review_score": {
                     "value": float(commerce["average_review_score"]),
+                    "analysis_type": "descriptive",
+                },
+                "unique_customers": {
+                    "value": int(customers["unique_customers"]),
+                    "analysis_type": "descriptive",
+                },
+                "repeat_customer_rate": {
+                    "value": float(customers["repeat_customer_rate"]),
                     "analysis_type": "descriptive",
                 },
             },

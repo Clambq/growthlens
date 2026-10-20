@@ -5,7 +5,8 @@ Status: **frozen before treatment-effect estimation**.
 ## Design and estimands
 
 - Population: all 64,000 rows in the public Hillstrom randomized email experiment after schema,
-  assignment-uniqueness, and outcome-domain checks.
+  stable source-row-key uniqueness, baseline-missingness, and outcome-domain checks. The file has
+  no durable real-world customer identifier, so cross-row customer uniqueness is not asserted.
 - Arms: `Mens E-Mail`, `Womens E-Mail`, and `No E-Mail` control.
 - Primary outcome: binary `conversion` during the experiment window.
 - Primary estimands: intention-to-treat risk difference for `Mens E-Mail` versus control and
@@ -28,10 +29,11 @@ Status: **frozen before treatment-effect estimation**.
 
 ## Validity gates
 
-Effect output is blocked when any expected arm is missing, a customer appears in multiple arms,
-expected allocation shares are invalid, or the sample-ratio-mismatch test rejects at 0.01.
-Baseline standardized mean differences are reported against `No E-Mail`; `|SMD| >= 0.10` is a
-diagnostic imbalance flag, not an automatic proof randomization failed.
+Effect output is blocked when any expected arm is missing, source-row keys repeat, expected
+allocation shares are invalid, the sample-ratio-mismatch test rejects at 0.01, or the maximum
+baseline `|SMD|` reaches 0.10. Baseline missingness is published as a diagnostic. The primary
+effect estimates remain unadjusted; CUPED is implemented and tested as a sensitivity utility but
+is not represented as part of the published result.
 
 ## Exploratory work
 

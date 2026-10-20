@@ -9,9 +9,16 @@ from pathlib import Path
 
 SECRET_PATTERNS = (
     ("AWS access key", re.compile(rb"AKIA[0-9A-Z]{16}")),
-    ("GitHub token", re.compile(rb"gh[ps]_[A-Za-z0-9]{30,}")),
+    ("GitHub token", re.compile(rb"(?:gh[psoru]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})")),
     ("private key", re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----")),
+    ("local Windows user path", re.compile(rb"[A-Za-z]:\\Users\\[^\\\r\n]+")),
 )
+
+FORBIDDEN_PATH_PATTERNS = (
+    re.compile(r"(?:^|/)data/raw/", re.IGNORECASE),
+    re.compile(r"\.(?:duckdb|db|sqlite|pem|key)$", re.IGNORECASE),
+)
+MAX_BLOB_BYTES = 10 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +63,13 @@ def scan_git_history(root: Path) -> tuple[HistoryFinding, ...]:
                 check=True,
             ).stdout
         )
+        for pattern in FORBIDDEN_PATH_PATTERNS:
+            if pattern.search(path):
+                findings.append(HistoryFinding(object_sha, path, "forbidden historical path"))
+                break
+        if size > MAX_BLOB_BYTES:
+            findings.append(HistoryFinding(object_sha, path, "oversized historical blob"))
+            continue
         if size > 2 * 1024 * 1024:
             continue
         content = subprocess.run(

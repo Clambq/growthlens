@@ -16,9 +16,25 @@
       "orders": {
         "analysis_type": "descriptive",
         "value": 98207
+      },
+      "repeat_customer_rate": {
+        "analysis_type": "descriptive",
+        "value": 0.030403200336877566
+      },
+      "unique_customers": {
+        "analysis_type": "descriptive",
+        "value": 94990
       }
     },
     "experiment": {
+      "max_absolute_baseline_smd": {
+        "analysis_type": "experiment_diagnostic",
+        "value": 0.008630731202832915
+      },
+      "max_baseline_missing_rate": {
+        "analysis_type": "experiment_diagnostic",
+        "value": 0.0
+      },
       "mens_email_conversion_effect": {
         "analysis_type": "randomized_experiment",
         "confidence_interval": {
@@ -55,13 +71,13 @@
   "schema_version": "1.0.0",
   "source_provenance": {
     "hillstrom": {
-      "run_id": "85bb0534-a81b-468f-bbff-cbefa072f473",
+      "run_id": "baec6dc3-bc23-4596-b2bf-9fedc57618fc",
       "sha256": [
         "0e5893329d8b93cefecc571777672028290ab69865718020c78c7284f291aece"
       ]
     },
     "olist": {
-      "run_id": "ec0750d0-ace1-49f2-a3bb-65746116f5ed",
+      "run_id": "5830ceec-35a4-478e-8617-494336aa9e4e",
       "sha256": [
         "983a422239e1712ded753b3bf9ecf47dc73f144d306029dcfa99e70a226883d2",
         "b514f6fc991b9566aeba02aa5d67e2c3630f034b60a0e05aa0d082a3b66d88d6",

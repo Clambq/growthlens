@@ -68,6 +68,12 @@ def dashboard_connection() -> sqlite3.Connection:
     ).to_sql("mart_customer_cohorts", connection, index=False)
     pd.DataFrame(
         [
+            {"customer_unique_id": "c1", "frequency": 2, "monetary_value": 120.0},
+            {"customer_unique_id": "c2", "frequency": 1, "monetary_value": 80.0},
+        ]
+    ).to_sql("mart_customer_rfm", connection, index=False)
+    pd.DataFrame(
+        [
             {
                 "seller_id": "raw-seller-1",
                 "commercial_order_count": 3,
@@ -121,13 +127,13 @@ def dashboard_connection() -> sqlite3.Connection:
                 "segment": "No E-Mail",
                 "observed_count": 100,
                 "observed_share": 0.5,
-                "duplicate_customer_count": 0,
+                "duplicate_source_row_key_count": 0,
             },
             {
                 "segment": "Mens E-Mail",
                 "observed_count": 100,
                 "observed_share": 0.5,
-                "duplicate_customer_count": 0,
+                "duplicate_source_row_key_count": 0,
             },
         ]
     ).to_sql("mart_experiment_quality", connection, index=False)
@@ -138,7 +144,7 @@ def dashboard_connection() -> sqlite3.Connection:
 def test_every_dashboard_export_declares_grain_key_and_stable_filename() -> None:
     filenames = [spec.filename for spec in EXPORT_SPECS]
 
-    assert len(EXPORT_SPECS) == 6
+    assert len(EXPORT_SPECS) == 7
     assert len(filenames) == len(set(filenames))
     assert filenames == sorted(filenames)
     for spec in EXPORT_SPECS:
@@ -163,6 +169,9 @@ def test_exports_reconcile_fixture_values_and_are_deterministic(
     assert daily["orders"].sum() == 3
     cohort = pd.read_csv(tmp_path / "first" / "customer_cohorts.csv")
     assert cohort.loc[cohort["month_offset"] == 1, "active_customers"].item() == 1
+    customers = pd.read_csv(tmp_path / "first" / "customer_summary.csv")
+    assert customers["unique_customers"].item() == 2
+    assert customers["repeat_customer_rate"].item() == pytest.approx(0.5)
 
 
 def test_no_raw_customer_order_or_seller_identifiers_enter_bi_layer(
@@ -188,22 +197,17 @@ def test_duplicate_declared_key_fails_export(
         export_powerbi_inputs(dashboard_connection, tmp_path, schema=None)
 
 
-def test_version_controlled_powerbi_project_declares_five_decision_pages() -> None:
-    page_root = PROJECT_ROOT / "powerbi" / "GrowthLens.Report" / "definition" / "pages"
-    metadata = json.loads((page_root / "pages.json").read_text(encoding="utf-8"))
-    names = [
-        json.loads((page_root / page / "page.json").read_text(encoding="utf-8"))[
-            "displayName"
-        ]
-        for page in metadata["pageOrder"]
-    ]
+def test_dashboard_blueprint_declares_scope_without_claiming_a_pbip() -> None:
+    contract = json.loads(
+        (PROJECT_ROOT / "powerbi" / "dashboard_contract.json").read_text(encoding="utf-8")
+    )
 
-    assert names == [
+    assert contract["pages"] == [
         "Management Overview",
         "Revenue and Customer Growth",
         "Fulfillment and Seller Operations",
         "Experiment Decision",
         "Data Quality",
     ]
-    assert (PROJECT_ROOT / "powerbi" / "GrowthLens.pbip").is_file()
-    assert (PROJECT_ROOT / "powerbi" / "GrowthLens.SemanticModel" / "definition.pbism").is_file()
+    assert contract["editable_power_bi_project_included"] is False
+    assert len(contract["inputs"]) == 7

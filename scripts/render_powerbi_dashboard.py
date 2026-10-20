@@ -178,6 +178,7 @@ def _load(input_dir: Path, name: str) -> pd.DataFrame:
 def render_dashboard(input_dir: Path, metrics_path: Path, output_path: Path) -> None:
     daily = _load(input_dir, "daily_kpis")
     cohorts = _load(input_dir, "customer_cohorts")
+    customer_summary = _load(input_dir, "customer_summary")
     delivery = _load(input_dir, "delivery_summary")
     sellers = _load(input_dir, "seller_scorecard")
     experiment = _load(input_dir, "experiment_summary")
@@ -190,10 +191,10 @@ def render_dashboard(input_dir: Path, metrics_path: Path, output_path: Path) -> 
     _header(canvas, "Management Overview", "Olist commerce performance - descriptive evidence", 1)
     total_merchandise = float(daily["merchandise_value"].sum())
     total_orders = int(daily["orders"].sum())
-    total_customers = int(daily["customers"].sum())
+    total_customers = int(customer_summary["unique_customers"].iloc[0])
     _card(canvas, 34, 374, 206, "Merchandise value", _money(total_merchandise))
     _card(canvas, 252, 374, 206, "Orders", f"{total_orders:,}")
-    _card(canvas, 470, 374, 206, "Customers (daily sum)", f"{total_customers:,}")
+    _card(canvas, 470, 374, 206, "Unique customers", f"{total_customers:,}")
     _card(canvas, 688, 374, 238, "Average order value", _money(total_merchandise / total_orders))
     _line_chart(canvas, daily, "merchandise_value", 34, 72, 574, 282, "Daily merchandise value")
     _line_chart(canvas, daily, "orders", 626, 72, 300, 282, "Daily orders")
@@ -303,8 +304,8 @@ def render_dashboard(input_dir: Path, metrics_path: Path, output_path: Path) -> 
         [104, 72, 126, 74],
         "Primary outcome effects",
     )
-    duplicate_count = int(quality["duplicate_customer_count"].max())
-    _card(canvas, 564, 142, 174, "Duplicate assignments", f"{duplicate_count:,}")
+    max_smd = float(metric_records["max_absolute_baseline_smd"]["value"])
+    _card(canvas, 564, 142, 174, "Max baseline |SMD|", f"{max_smd:.4f}")
     srm = metric_records["sample_ratio_p_value"]["value"]
     _card(canvas, 752, 142, 174, "SRM p-value", f"{float(srm):.4f}")
     canvas.setFillColor(colors.HexColor("#FFF4D6"))
@@ -316,7 +317,8 @@ def render_dashboard(input_dir: Path, metrics_path: Path, output_path: Path) -> 
     canvas.drawString(
         50,
         84,
-        "Interpret effects only after SRM, duplicate, interval, and Holm checks pass.",
+        "Interpret effects only after source-key, SRM, baseline-balance, "
+        "interval, and Holm checks pass.",
     )
     canvas.showPage()
 
@@ -340,14 +342,14 @@ def render_dashboard(input_dir: Path, metrics_path: Path, output_path: Path) -> 
             str(row.segment),
             f"{int(row.observed_count):,}",
             f"{float(row.observed_share):.2%}",
-            str(int(row.duplicate_customer_count)),
+            str(int(row.duplicate_source_row_key_count)),
         ]
         for row in quality.itertuples()
     ]
     _table(
         canvas,
         quality_rows,
-        ["Segment", "N", "Share", "Duplicates"],
+        ["Segment", "N", "Share", "Duplicate keys"],
         646,
         260,
         [112, 70, 84, 92],

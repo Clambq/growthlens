@@ -34,8 +34,9 @@ both numerator and denominator, and the artifact generator recomputes the overal
 
 The analysis contract was frozen before effects: conversion is primary, the two email groups are
 each compared with no-email control, p-values use Holm adjustment, intervals are 95%, and
-post-treatment variables are prohibited from adjustment. The assignment counts are balanced
-(SRM p = 0.9037) with zero duplicate assignments.
+post-treatment variables are prohibited from adjustment. The published unadjusted analysis passes
+source-row-key uniqueness, baseline-balance, and assignment-ratio checks (SRM p = 0.9037). The
+public file has no durable real-world customer ID, so cross-row customer uniqueness is not claimed.
 
 ### What do the effects mean?
 
@@ -71,5 +72,5 @@ failure. CI runs unit, integration, statistical, notebook-hygiene, dbt, and repo
 - Olist is an order lifecycle dataset, not a clickstream funnel.
 - The experiment lacks modern messaging guardrails and cost data.
 - Seller scoring is a transparent prioritization heuristic, not a causal risk score.
-- The checked-in Power BI artifact is PBIP/TMDL source plus PDF evidence; creating a binary PBIX
-  requires Power BI Desktop.
+- The checked-in BI artifact is a Power BI implementation blueprint plus rendered PDF/PNG evidence;
+  it does not claim to be a Desktop-authored PBIP/PBIX.
