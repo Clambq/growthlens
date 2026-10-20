@@ -15,7 +15,10 @@ data/raw/
 data/interim/
 *.csv
 *.parquet
+*.zip
+*.7z
 *.sqlite*
+*.duckdb*
 postgres-data/
 
 # Generated artifacts; only reviewed evidence manifests may be versioned.

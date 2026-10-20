@@ -66,7 +66,7 @@ class LoadManifest:
 
 
 def _physical_table(engine: Engine, schema: str, name: str) -> tuple[str | None, str]:
-    if engine.dialect.name == "postgresql":
+    if engine.dialect.name in {"postgresql", "duckdb"}:
         return schema, name
     return None, f"{schema}__{name}"
 
@@ -86,10 +86,15 @@ def _audit_tables(engine: Engine) -> tuple[Table, Table]:
         Column("error", Text),
         schema=schema,
     )
+    file_id = (
+        Column("file_id", String(36), primary_key=True, autoincrement=False)
+        if engine.dialect.name == "duckdb"
+        else Column("file_id", Integer, primary_key=True, autoincrement=True)
+    )
     files = Table(
         files_name,
         metadata,
-        Column("file_id", Integer, primary_key=True, autoincrement=True),
+        file_id,
         Column("run_id", String(36), nullable=False),
         Column("source_file", Text, nullable=False),
         Column("target_table", Text, nullable=False),
@@ -104,7 +109,7 @@ def _audit_tables(engine: Engine) -> tuple[Table, Table]:
 def bootstrap_database(engine: Engine) -> None:
     """Create PostgreSQL schemas and portable audit tables if absent."""
 
-    if engine.dialect.name == "postgresql":
+    if engine.dialect.name in {"postgresql", "duckdb"}:
         with engine.begin() as connection:
             connection.execute(text("CREATE SCHEMA IF NOT EXISTS raw"))
             connection.execute(text("CREATE SCHEMA IF NOT EXISTS audit"))
@@ -127,6 +132,11 @@ def _read_rows(path: Path, contract: FileContract) -> tuple[tuple[str, ...], lis
                 )
             rows.append({name: row[name] for name in fieldnames})
     return fieldnames, rows
+
+
+def _read_header(path: Path, contract: FileContract) -> tuple[str, ...]:
+    with path.open("r", encoding=contract.encoding, newline="") as handle:
+        return tuple(next(csv.reader(handle), ()))
 
 
 def _raw_table(engine: Engine, logical_name: str, columns: tuple[str, ...]) -> Table:
@@ -189,6 +199,17 @@ def _load_file(
     logical_name = TABLE_MAPPINGS.get(contract.name)
     if logical_name is None:
         raise ValueError(f"no explicit table mapping for {contract.name}")
+    if engine.dialect.name == "duckdb":
+        return _load_file_duckdb(
+            connection,
+            engine,
+            run_id=run_id,
+            loaded_at=loaded_at,
+            path=path,
+            contract=contract,
+            sha256=sha256,
+            logical_name=logical_name,
+        )
     columns, rows = _read_rows(path, contract)
     target = _raw_table(engine, logical_name, columns)
     target.create(connection, checkfirst=True)
@@ -228,6 +249,85 @@ def _load_file(
         target_table=logical_name,
         source_sha256=sha256,
         rows_read=len(rows),
+        rows_inserted=after - before,
+    )
+
+
+def _quote_identifier(value: str) -> str:
+    return '"' + value.replace('"', '""') + '"'
+
+
+def _quote_literal(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def _load_file_duckdb(
+    connection: Connection,
+    engine: Engine,
+    *,
+    run_id: UUID,
+    loaded_at: datetime,
+    path: Path,
+    contract: FileContract,
+    sha256: str,
+    logical_name: str,
+) -> LoadedFile:
+    """Use DuckDB's vectorized CSV reader while preserving the audited contract."""
+
+    columns = _read_header(path, contract)
+    target = _raw_table(engine, logical_name, columns)
+    target.create(connection, checkfirst=True)
+    before = int(connection.execute(select(func.count()).select_from(target)).scalar_one())
+    stage_name = f"stage_{logical_name}_{run_id.hex[:8]}"
+    stage = _quote_identifier(stage_name)
+    column_sql = ", ".join(_quote_identifier(column) for column in columns)
+    canonical_sql = ", ".join(
+        f"coalesce({_quote_identifier(column)}, '')" for column in columns
+    )
+    source_path = _quote_literal(path.resolve().as_posix())
+    source_file = _quote_literal(contract.name)
+    run_value = _quote_literal(str(run_id))
+    loaded_value = _quote_literal(loaded_at.isoformat())
+    connection.exec_driver_sql(
+        f"""
+        CREATE TEMP TABLE {stage} AS
+        WITH numbered AS (
+            SELECT *, row_number() OVER () + 1 AS source_row_number
+            FROM read_csv_auto({source_path}, header=true, all_varchar=true, sample_size=-1)
+        )
+        SELECT {column_sql},
+               CAST({loaded_value} AS TIMESTAMPTZ) AS _loaded_at,
+               {source_file} AS _source_file,
+               source_row_number AS _source_row_number,
+               sha256({source_file} || '|' || CAST(source_row_number AS VARCHAR)
+                      || '|' || concat_ws('|', {canonical_sql})) AS _row_hash,
+               {run_value} AS _run_id
+        FROM numbered
+        """
+    )
+    try:
+        qualified_target = f"raw.{_quote_identifier(logical_name)}"
+        connection.exec_driver_sql(
+            f"""
+            INSERT INTO {qualified_target}
+            SELECT stage.* FROM {stage} AS stage
+            WHERE NOT EXISTS (
+                SELECT 1 FROM {qualified_target} AS target
+                WHERE target._row_hash = stage._row_hash
+            )
+            """
+        )
+        rows_read = int(
+            connection.exec_driver_sql(f"SELECT count(*) FROM {stage}").scalar_one()
+        )
+    finally:
+        connection.exec_driver_sql(f"DROP TABLE IF EXISTS {stage}")
+    after = int(connection.execute(select(func.count()).select_from(target)).scalar_one())
+    return LoadedFile(
+        source_file=contract.name,
+        target_table=logical_name,
+        source_sha256=sha256,
+        rows_read=rows_read,
         rows_inserted=after - before,
     )
 
@@ -272,14 +372,19 @@ def load_dataset(engine: Engine, root: Path, contract: DatasetContract) -> LoadM
                     sha256=check.sha256,
                 )
                 loaded_files.append(loaded_file)
+                audit_values = {
+                    "run_id": str(run_id),
+                    "source_file": loaded_file.source_file,
+                    "target_table": loaded_file.target_table,
+                    "source_sha256": loaded_file.source_sha256,
+                    "rows_read": loaded_file.rows_read,
+                    "rows_inserted": loaded_file.rows_inserted,
+                }
+                if engine.dialect.name == "duckdb":
+                    audit_values["file_id"] = str(uuid4())
                 connection.execute(
                     insert(audit_files).values(
-                        run_id=str(run_id),
-                        source_file=loaded_file.source_file,
-                        target_table=loaded_file.target_table,
-                        source_sha256=loaded_file.source_sha256,
-                        rows_read=loaded_file.rows_read,
-                        rows_inserted=loaded_file.rows_inserted,
+                        **audit_values,
                     )
                 )
             connection.execute(

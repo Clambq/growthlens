@@ -223,6 +223,7 @@ OLIST_CONTRACT = DatasetContract(
         FileContract(
             "product_category_name_translation.csv",
             frozenset({"product_category_name", "product_category_name_english"}),
+            encoding="utf-8-sig",
         ),
     ),
 )

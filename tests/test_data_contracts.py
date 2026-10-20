@@ -95,3 +95,21 @@ def test_olist_contract_declares_the_official_nine_file_manifest() -> None:
     }
     assert len(OLIST_CONTRACT.files) == 9
     assert all(file.required_columns for file in OLIST_CONTRACT.files)
+
+
+def test_olist_translation_contract_accepts_official_utf8_bom(tmp_path: Path) -> None:
+    contract = next(
+        file
+        for file in OLIST_CONTRACT.files
+        if file.name == "product_category_name_translation.csv"
+    )
+    (tmp_path / contract.name).write_bytes(
+        "product_category_name,product_category_name_english\nbeleza_saude,health_beauty\n".encode(
+            "utf-8-sig"
+        )
+    )
+
+    report = verify_dataset(tmp_path, DatasetContract("translation", (contract,)))
+
+    assert report.ok is True
+    assert report.files[0].columns[0] == "product_category_name"
