@@ -1,0 +1,45 @@
+version: 2
+
+models:
+  - name: dim_experiment_customers
+    columns:
+      - name: experiment_customer_id
+        data_tests: [not_null, unique]
+
+  - name: fct_experiment_assignments
+    columns:
+      - name: experiment_customer_id
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('dim_experiment_customers')
+                field: experiment_customer_id
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Mens E-Mail', 'Womens E-Mail', 'No E-Mail']
+
+  - name: fct_experiment_outcomes
+    columns:
+      - name: experiment_customer_id
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              arguments:
+                to: ref('fct_experiment_assignments')
+                field: experiment_customer_id
+      - name: converted
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+
+  - name: mart_experiment_quality
+    columns:
+      - name: segment
+        data_tests: [not_null, unique]
