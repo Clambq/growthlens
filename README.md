@@ -4,7 +4,7 @@
 > grain-safe SQL marts, monitored business KPIs, randomized-experiment inference, and a
 > five-page Power BI decision dashboard.
 
-[![CI](https://github.com/hengyu-zhang/growthlens/actions/workflows/ci.yml/badge.svg)](https://github.com/hengyu-zhang/growthlens/actions/workflows/ci.yml)
+[![CI](https://github.com/Clambq/growthlens/actions/workflows/ci.yml/badge.svg)](https://github.com/Clambq/growthlens/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB)](https://www.python.org/)
 [![dbt](https://img.shields.io/badge/dbt-Core-FF694B)](https://www.getdbt.com/)
 [![License: MIT](https://img.shields.io/badge/Code-MIT-green.svg)](LICENSE)
@@ -68,7 +68,7 @@ Prerequisites: Python 3.11+, Git, and optionally Docker Desktop / Power BI Deskt
 path uses DuckDB, so Docker is not required.
 
 ```powershell
-git clone https://github.com/hengyu-zhang/growthlens.git
+git clone https://github.com/Clambq/growthlens.git
 cd growthlens
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -e ".[dev,analytics]"

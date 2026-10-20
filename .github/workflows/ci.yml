@@ -31,6 +31,8 @@ jobs:
       JUPYTER_DATA_DIR: ${{ runner.temp }}/growthlens-jupyter-data
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -41,5 +43,7 @@ jobs:
         run: python -m ruff check src scripts tests
       - name: Test
         run: python -m pytest -q
+      - name: Scan full Git history
+        run: python scripts/scan_git_history.py
       - name: Execute notebooks in clean kernels
         run: python scripts/execute_notebooks.py
